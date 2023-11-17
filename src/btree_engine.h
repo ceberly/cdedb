@@ -3,6 +3,7 @@
 
 #include "engine.h"
 
-struct Engine new_btree_engine(void);
+struct Engine *new_btree_engine(const char *);
+void btree_engine_destroy(struct Engine *);
 
 #endif
