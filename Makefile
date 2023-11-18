@@ -7,7 +7,7 @@ BTREE_ENGINE_H=src/engine.h src/btree_engine.h
 
 .PHONY: test
 test:
-	clang ${CFLAGS} ${CFLAGS_SAN} ${BTREE_ENGINE_C} src/test_btree_engine.c -o \
+	clang -D TEST ${CFLAGS} ${CFLAGS_SAN} ${BTREE_ENGINE_C} -o \
 		build/test_btree_engine && ./build/test_btree_engine
 
 format:

@@ -1,13 +1,5 @@
 #include "btree_engine.h"
 
-#include <assert.h>
-#include <stdio.h>
-
-#include <stdlib.h>
-static_assert(NULL == 0, "get a better computer.");
-
-#include <string.h>
-
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -84,10 +76,14 @@ struct Engine *new_btree_engine(const char *backing_file) {
   }
 
   struct Engine *e = malloc(sizeof(struct Engine));
-  assert(e != 0);
+  if (e == 0) {
+    return 0;
+  }
 
   struct btree_state *state = malloc(sizeof(struct btree_state));
-  assert(state != 0);
+  if (e == 0) {
+    return 0;
+  }
 
   state->openfd = fd;
 
@@ -108,3 +104,66 @@ void btree_engine_destroy(struct Engine *engine) {
     free(engine);
   }
 }
+
+#ifdef TEST
+#include <time.h>
+
+bool oracle_test(struct Engine *engine) {
+  struct {
+    u32 key;
+    i64 value;
+  } oracle[1000];
+
+  for (int i = 0; i < 1000; i++) {
+    u32 key = rand() % 100000;
+    i64 value = rand() % 100000;
+
+    oracle[i].key = key;
+    oracle[i].value = value;
+
+    if (engine->insert(key, value) != 0) {
+      fprintf(stderr, "failed to insert\n");
+      return false;
+    }
+  }
+
+  for (int i = 0; i < 1000; i++) {
+    u32 key = oracle[i].key;
+    i64 value;
+
+    if (engine->get(key, &value) != 0) {
+      fprintf(stderr, "oracle(): failed to get\n");
+      return false;
+    }
+
+    if (value != oracle[i].value) {
+      fprintf(stderr, "oracle(): expected %zu got %zu instead.\n",
+              oracle[i].value, value);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+int main(void) {
+  srand((unsigned int)time(NULL));
+
+  struct Engine *engine = new_btree_engine("test/btree.db");
+  if (engine == NULL) {
+    return EXIT_FAILURE;
+  }
+
+  if (!oracle_test(engine)) {
+    goto fail;
+  }
+
+  btree_engine_destroy(engine);
+  return EXIT_SUCCESS;
+
+fail:
+  btree_engine_destroy(engine);
+  return EXIT_FAILURE;
+}
+
+#endif
