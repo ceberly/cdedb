@@ -105,6 +105,8 @@ void btree_engine_destroy(struct Engine *engine) {
   }
 }
 
+// --- Tests ---
+
 #ifdef TEST
 #include <time.h>
 
