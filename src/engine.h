@@ -6,7 +6,7 @@
 struct Engine {
   u8 last_error;
   void *state; // awesome.
-              
+
   u8 (*insert)(u32 key, i64 value);
   u8 (*get)(u32 key, i64 *value);
 };

@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,6 +8,9 @@ int main(void) {
   srand((unsigned int)time(NULL));
 
   struct Engine *engine = new_btree_engine("test/btree.db");
+  if (engine == NULL) {
+    return EXIT_FAILURE;
+  }
 
   struct {
     u32 key;
@@ -22,18 +24,31 @@ int main(void) {
     oracle[i].key = key;
     oracle[i].value = value;
 
-    assert(engine->insert(key, value) == 0);
+    if (engine->insert(key, value) != 0) {
+      fprintf(stderr, "failed to insert\n");
+      goto fail;
+    }
   }
 
   for (int i = 0; i < 1000; i++) {
     u32 key = oracle[i].key;
     i64 value;
 
-    assert(engine->get(key, &value) == 0);
-    assert(value == oracle[i].value);
+    if (engine->get(key, &value) != 0) {
+      fprintf(stderr, "failed to get\n");
+      goto fail;
+    }
+    
+    if (value != oracle[i].value) {
+      fprintf(stderr, "expected %zu got %zu instead.\n", oracle[i].value, value);
+      goto fail;
+    }
   }
 
   btree_engine_destroy(engine);
-
   return EXIT_SUCCESS;
+
+fail:
+  btree_engine_destroy(engine);
+  return EXIT_FAILURE;
 }

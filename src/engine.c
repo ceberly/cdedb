@@ -5,10 +5,10 @@
 
 void engine_print_error(u8 err) {
   switch (err) {
-    case 0:
-      fprintf(stderr, "None\n");
-      break;
-    default:
-      assert(false);
+  case 0:
+    fprintf(stderr, "None\n");
+    break;
+  default:
+    assert(false);
   }
 }
