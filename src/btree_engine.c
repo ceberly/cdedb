@@ -4,11 +4,24 @@
 #include <unistd.h>
 
 #define PAGE_SIZE 1024 // bytes = 1kb
+#define PAGE_HEADER_LEN 12
 #define MAGIC "CDEB"
+
+#define PAGE_TABLE_LEAF 0x1
 
 struct btree_state {
   int openfd;
 };
+
+struct page_header {
+  u8 kind;
+  u8 rest[11]; // there will be 12 bytes of stuff eventually, like sqlite
+};
+
+static void page_header_as_bytes(struct page_header *p, u8 *out) {
+  memset(out, 0, PAGE_HEADER_LEN);
+  out[0] = p->kind;
+}
 
 static u8 insert(u32 key, i64 value) { return 0; }
 
@@ -27,7 +40,13 @@ int possibly_init_file(int fd) {
 
   if (size < PAGE_SIZE) {
     u8 first_page[PAGE_SIZE] = {0};
+    u8 header[PAGE_HEADER_LEN] = {0};
+
+    struct page_header p = {.kind = PAGE_TABLE_LEAF};
+    page_header_as_bytes(&p, header);
+
     memcpy(first_page, MAGIC, 4);
+    memcpy(first_page + 4, header, PAGE_HEADER_LEN);
 
     ssize_t n = write(fd, first_page, PAGE_SIZE);
     if (n < 0) {
