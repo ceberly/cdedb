@@ -7,7 +7,8 @@
 #define PAGE_HEADER_LEN 12
 #define MAGIC "CDEB"
 
-#define PAGE_TABLE_LEAF 0x1
+#define PAGE_TABLE_ROOT 0x1
+#define PAGE_TABLE_LEAF 0x2
 
 struct btree_state {
   int openfd;
